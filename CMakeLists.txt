@@ -10,10 +10,6 @@ cmake_minimum_required(VERSION 2.8.10 FATAL_ERROR)
 
 project(geotiff C)
 
-SET(GEOTIFF_LIB_NAME geotiff)
-SET(GEOTIFF_LIBRARY_TARGET geotiff_library)
-SET(GEOTIFF_ARCHIVE_TARGET geotiff_archive)
-
 # some init settings
 set(CMAKE_COLOR_MAKEFILE ON)
 # set path to additional CMake modules
@@ -24,8 +20,6 @@ set(INSTALL_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib" CACHE INTERNAL "Installation d
 set(INSTALL_INC_DIR "${CMAKE_INSTALL_PREFIX}/include" CACHE INTERNAL "Installation directory for headers" FORCE)
 set(INSTALL_SHARE_DIR "${CMAKE_INSTALL_PREFIX}/share" CACHE INTERNAL "Shared files directory" FORCE)
 set(INSTALL_DOC_DIR "${INSTALL_SHARE_DIR}/doc/${PROJECT_NAME}" CACHE INTERNAL "Doc files directory" FORCE)
-
-message(STATUS "install dirs ${INSTALL_BIN_DIR} ${INSTALL_LIB_DIR} ${INSTALL_INC_DIR} ${INSTALL_SHARE_DIR} ${INSTALL_DOC_DIR}")
 
 include(util)
 
@@ -48,12 +42,6 @@ set(LINK_SOVERSION "2")
 set(LINK_VERSION "2.1.1")
 
 report_version(${PROJECT_NAME} "${VERSION} [${LINK_VERSION}]")  
-
-string (TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
-string (TOUPPER ${PROJECT_NAME} PROJECT_NAME_UPPER)
-
-# Allow advanced users to generate Makefiles printing detailed commands
-mark_as_advanced(CMAKE_VERBOSE_MAKEFILE)
 
 ###############################################################################
 # General build settings
