@@ -224,6 +224,8 @@ install(FILES ${GEOTIFF_CSV_DATA} DESTINATION ${INSTALL_SHARE_DIR}/epsg_csv)
 # Install header files for development distribution
 install(FILES ${GEOTIFF_LIB_HEADERS} DESTINATION ${INSTALL_INC_DIR})
 
+set(EXPORT_TARGETS)
+
 ###############################################################################
 # Build libxtiff library
 
@@ -309,11 +311,13 @@ if(BUILD_SHARED_LIBS)
 else()    
     set(LIB_NAME ${PROJECT_NAME}static)
     add_library(${LIB_NAME} STATIC ${GEOTIFF_LIB_SOURCES} ${GEOTIFF_LIB_CSV_SOURCES})
-endif()   
+endif()  
+
+set(EXPORT_TARGETS ${EXPORT_TARGETS} ${LIB_NAME}) 
 
 target_link_extlibraries(${LIB_NAME}) 
 
-export(TARGETS ${LIB_NAME} FILE ${LIB_NAME}-exports.cmake)
+export(TARGETS ${EXPORT_TARGETS} FILE ${LIB_NAME}-exports.cmake)
 add_custom_target(uninstall COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake) 
 
 # Unix, linux:
