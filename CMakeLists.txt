@@ -52,7 +52,7 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
 endif()
 
 if (CMAKE_MAJOR_VERSION GREATER 2)
-    cmake_policy(SET CMP0022 OLD) # interface link libraries
+#    cmake_policy(SET CMP0022 OLD) # interface link libraries
     cmake_policy(SET CMP0042 OLD) # osx rpath
 endif()
 
@@ -317,7 +317,7 @@ set(EXPORT_TARGETS ${EXPORT_TARGETS} ${LIB_NAME})
 
 target_link_extlibraries(${LIB_NAME}) 
 
-export(TARGETS ${EXPORT_TARGETS} FILE ${LIB_NAME}-exports.cmake EXPORT_LINK_INTERFACE_LIBRARIES)
+export(TARGETS ${EXPORT_TARGETS} FILE ${LIB_NAME}-exports.cmake)
 add_custom_target(uninstall COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake) 
 
 # Unix, linux:
