@@ -51,10 +51,10 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
     set(GEOTIFF_BUILD_PEDANTIC TRUE)
 endif()
 
-if (CMAKE_MAJOR_VERSION GREATER 2)
+#if (CMAKE_MAJOR_VERSION GREATER 2)
 #    cmake_policy(SET CMP0022 OLD) # interface link libraries
-    cmake_policy(SET CMP0042 OLD) # osx rpath
-endif()
+#    cmake_policy(SET CMP0042 OLD) # osx rpath
+#endif()
 
 ###############################################################################
 # Platform and compiler specific settings
