@@ -7,7 +7,17 @@
 #
 ###############################################################################
 cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
-
+cmake_policy(VERSION 2.8.12)
+if (POLICY CMP0022)
+  cmake_policy(SET CMP0022 OLD)
+endif()
+if (POLICY CMP0042)
+  cmake_policy(SET CMP0042 OLD) # osx rpath
+endif()
+if (POLICY CMP0011)
+  cmake_policy(SET CMP0011 OLD) # policy setting
+endif()
+    
 project(geotiff C)
 
 # some init settings
@@ -318,6 +328,7 @@ set(EXPORT_TARGETS ${EXPORT_TARGETS} ${LIB_NAME})
 target_link_extlibraries(${LIB_NAME}) 
 
 export(TARGETS ${EXPORT_TARGETS} FILE ${LIB_NAME}-exports.cmake)
+
 add_custom_target(uninstall COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake) 
 
 # Unix, linux:
