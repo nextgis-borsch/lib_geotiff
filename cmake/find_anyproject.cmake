@@ -23,7 +23,7 @@
 set(TARGET_LINK_LIB) # ${TARGET_LINK_LIB} ""
 set(DEPENDENCY_LIB) # ${DEPENDENCY_LIB} ""
 set(WITHOPT ${WITHOPT} "")
-      
+       
 function(find_anyproject name)
 
     include (CMakeParseArguments)
@@ -115,6 +115,9 @@ function(target_link_extlibraries name)
         list(REMOVE_DUPLICATES TARGET_LINK_LIB)
         target_link_libraries(${name} ${TARGET_LINK_LIB})
     endif()
-    file(WRITE ${CMAKE_BINARY_DIR}/ext_options.cmake ${WITHOPT})
+    write_ext_options()
 endfunction()
 
+function(write_ext_options)
+    file(WRITE ${CMAKE_BINARY_DIR}/ext_options.cmake ${WITHOPT})
+endfunction()
