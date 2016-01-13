@@ -317,7 +317,7 @@ set(EXPORT_TARGETS ${EXPORT_TARGETS} ${LIB_NAME})
 
 target_link_extlibraries(${LIB_NAME}) 
 
-export(TARGETS ${EXPORT_TARGETS} FILE ${LIB_NAME}-exports.cmake)
+export(TARGETS ${EXPORT_TARGETS} FILE ${LIB_NAME}-exports.cmake EXPORT_LINK_INTERFACE_LIBRARIES)
 
 add_custom_target(uninstall COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake) 
 
