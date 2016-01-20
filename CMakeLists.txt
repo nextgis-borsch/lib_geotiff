@@ -112,7 +112,7 @@ endif()
 include_directories(${PROJECT_SOURCE_DIR})
 include_directories(${PROJECT_SOURCE_DIR}/libxtiff)
 
-include(find_anyproject)
+include(FindAnyProject)
 
 # TIFF support - required, default=ON
 find_anyproject(TIFF REQUIRED)
