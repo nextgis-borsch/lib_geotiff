@@ -15,20 +15,17 @@ set(CMAKE_COLOR_MAKEFILE ON)
 # set path to additional CMake modules
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 
-set(INSTALL_BIN_DIR "bin" CACHE INTERNAL "Installation directory for executables" FORCE)
-set(INSTALL_LIB_DIR "lib" CACHE INTERNAL "Installation directory for libraries" FORCE)
-set(INSTALL_INC_DIR "include" CACHE INTERNAL "Installation directory for headers" FORCE)
-set(INSTALL_SHARE_DIR "share" CACHE INTERNAL "Shared files directory" FORCE)
-set(INSTALL_DOC_DIR "${INSTALL_SHARE_DIR}/doc/${PROJECT_NAME}" CACHE INTERNAL "Doc files directory" FORCE)
+include(GNUInstallDirs)
+
+set(INSTALL_BIN_DIR ${CMAKE_INSTALL_BINDIR} CACHE INTERNAL "Installation directory for executables" FORCE)
+set(INSTALL_LIB_DIR ${CMAKE_INSTALL_LIBDIR} CACHE INTERNAL "Installation directory for libraries" FORCE)
+set(INSTALL_INC_DIR ${CMAKE_INSTALL_INCLUDEDIR} CACHE INTERNAL "Installation directory for headers" FORCE)
+set(INSTALL_SHARE_DIR ${CMAKE_INSTALL_DATADIR} CACHE INTERNAL "Shared files directory" FORCE)
+set(INSTALL_DOC_DIR ${CMAKE_INSTALL_DOCDIR} CACHE INTERNAL "Doc files directory" FORCE)
 
 include(util)
 
 # Version information
-set(PROJECT_VERSION_MAJOR)
-set(PROJECT_VERSION_MINOR)
-set(PROJECT_VERSION_PATCH)
-set(PROJECT_VERSION_REV)
-
 check_version(PROJECT_VERSION_MAJOR PROJECT_VERSION_MINOR PROJECT_VERSION_PATCH PROJECT_VERSION_REV)
 
 set(VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
