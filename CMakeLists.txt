@@ -23,6 +23,10 @@ set(INSTALL_INC_DIR ${CMAKE_INSTALL_INCLUDEDIR} CACHE INTERNAL "Installation dir
 set(INSTALL_SHARE_DIR ${CMAKE_INSTALL_DATADIR} CACHE INTERNAL "Shared files directory" FORCE)
 set(INSTALL_DOC_DIR ${CMAKE_INSTALL_DOCDIR} CACHE INTERNAL "Doc files directory" FORCE)
 
+if(CMAKE_GENERATOR_TOOLSET MATCHES "*xp")
+    add_definitions(-D_WIN32_WINNT=0x0501)
+endif()
+
 include(util)
 
 # Version information
