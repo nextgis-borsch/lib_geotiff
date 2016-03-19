@@ -251,10 +251,16 @@ function(find_extproject name)
     include_directories(${EP_BASE}/Install/${name}_EP/include)
     foreach (inc ${repo_include})
         include_directories(${EP_BASE}/Install/${name}_EP/include/${inc})
-    endforeach ()    
+    endforeach ()  
+      
+    if(WIN32)
+        set(_INST_ROOT_PATH /)
+    else()
+        set(_INST_ROOT_PATH ${CMAKE_INSTALL_PREFIX})
+    endif()
     
     install( DIRECTORY ${EP_BASE}/Install/${name}_EP/ 
-             DESTINATION ${CMAKE_INSTALL_PREFIX} #on win32 may need only / 
+             DESTINATION ${_INST_ROOT_PATH}
              COMPONENT libraries)
         
     set(EXPORTS_PATHS ${EXPORTS_PATHS} PARENT_SCOPE)
