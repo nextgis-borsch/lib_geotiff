@@ -303,7 +303,6 @@ endif ()
 if(BUILD_SHARED_LIBS)
     set(LIB_NAME ${PROJECT_NAME})
     add_library(${LIB_NAME} SHARED ${GEOTIFF_LIB_SOURCES} ${GEOTIFF_LIB_CSV_SOURCES} ${XTIFF_SOURCES})
-#    set_target_properties(${LIB_NAME} PROPERTIES DEFINE_SYMBOL XML2_DLL)
     
     # Windows:
     if(WIN32 AND MSVC)
