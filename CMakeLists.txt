@@ -91,11 +91,13 @@ check_include_files(string.h HAVE_STRING_H)
 
 configure_file(${CMAKE_MODULE_PATH}/cmake_uninstall.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake IMMEDIATE @ONLY)
 
+include(FindAnyProject)
+
 ###############################################################################
 # User-defined build settings
 
 set(GEOTIFF_CSV_NAMES area.csv codes.csv datum.csv gcs.csv pcs.csv)
-find_path(GEOTIFF_CSV_DATA_DIR NAMES ${GEOTIFF_CSV_NAMES}
+find_exthost_path(GEOTIFF_CSV_DATA_DIR NAMES ${GEOTIFF_CSV_NAMES}
     PATHS "${CMAKE_SOURCE_DIR}/csv"
     DOC "Default location of GeoTIFF CSV files"
     NO_DEFAULT_PATH)
@@ -112,8 +114,6 @@ endif()
 
 include_directories(${PROJECT_SOURCE_DIR})
 include_directories(${PROJECT_SOURCE_DIR}/libxtiff)
-
-include(FindAnyProject)
 
 # TIFF support - required, default=ON
 find_anyproject(TIFF REQUIRED)
