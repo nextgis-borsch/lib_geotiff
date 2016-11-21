@@ -300,16 +300,14 @@ if (MSVC OR CMAKE_CONFIGURATION_TYPES)
   set (CMAKE_DEBUG_POSTFIX _d)
 endif ()
 
+set(LIB_NAME ${PROJECT_NAME})
 if(BUILD_SHARED_LIBS)
-    set(LIB_NAME ${PROJECT_NAME})
     add_library(${LIB_NAME} SHARED ${GEOTIFF_LIB_SOURCES} ${GEOTIFF_LIB_CSV_SOURCES} ${XTIFF_SOURCES})
-    
     # Windows:
     if(WIN32 AND MSVC)
         set_target_properties(${LIB_NAME} PROPERTIES IMPORT_SUFFIX "_i.lib")
     endif(WIN32 AND MSVC)
 else()    
-    set(LIB_NAME ${PROJECT_NAME}static)
     add_library(${LIB_NAME} STATIC ${GEOTIFF_LIB_SOURCES} ${GEOTIFF_LIB_CSV_SOURCES})
 endif()  
 
