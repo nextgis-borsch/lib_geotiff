@@ -7,7 +7,7 @@
 #
 ###############################################################################
 cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
-    
+
 project(geotiff C)
 
 # some init settings
@@ -15,13 +15,44 @@ set(CMAKE_COLOR_MAKEFILE ON)
 # set path to additional CMake modules
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 
-include(GNUInstallDirs)
+if(OSX_FRAMEWORK AND (BUILD_SHARED_LIBS OR BUILD_STATIC_LIBS))
+  message(FATAL_ERROR "Only OSX_FRAMEWORK key or any or both BUILD_SHARED_LIBS
+                       and BUILD_STATIC_LIBS keys are permitted")
+endif()
 
-set(INSTALL_BIN_DIR ${CMAKE_INSTALL_BINDIR} CACHE INTERNAL "Installation directory for executables" FORCE)
-set(INSTALL_LIB_DIR ${CMAKE_INSTALL_LIBDIR} CACHE INTERNAL "Installation directory for libraries" FORCE)
-set(INSTALL_INC_DIR ${CMAKE_INSTALL_INCLUDEDIR} CACHE INTERNAL "Installation directory for headers" FORCE)
-set(INSTALL_SHARE_DIR ${CMAKE_INSTALL_DATADIR} CACHE INTERNAL "Shared files directory" FORCE)
-set(INSTALL_DOC_DIR ${CMAKE_INSTALL_DOCDIR} CACHE INTERNAL "Doc files directory" FORCE)
+if(OSX_FRAMEWORK)
+  set(INSTALL_BIN_DIR "${CMAKE_INSTALL_PREFIX}/Applications" CACHE INTERNAL "Installation directory for executables" FORCE)
+  set(INSTALL_LIB_DIR "${CMAKE_INSTALL_PREFIX}/Library/Frameworks" CACHE INTERNAL "Installation directory for libraries" FORCE)
+  set(SKIP_INSTALL_HEADERS ON)
+  set(SKIP_INSTALL_EXECUTABLES ON)
+  set(SKIP_INSTALL_FILES ON)
+  set(SKIP_INSTALL_DOCS ON)
+  set(SKIP_INSTALL_EXPORT ON)
+
+  set(CMAKE_MACOSX_RPATH ON)
+
+  # use, i.e. don't skip the full RPATH for the build tree
+  set(CMAKE_SKIP_BUILD_RPATH  TRUE)
+
+  # when building, don't use the install RPATH already
+  # (but later on when installing)
+  set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+
+  # the RPATH to be used when installing
+  set(CMAKE_INSTALL_RPATH "${INSTALL_LIB_DIR}")
+
+  # don't add the automatically determined parts of the RPATH
+  # which point to directories outside the build tree to the install RPATH
+  set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+else()
+    include(GNUInstallDirs)
+
+    set(INSTALL_BIN_DIR ${CMAKE_INSTALL_BINDIR} CACHE INTERNAL "Installation directory for executables" FORCE)
+    set(INSTALL_LIB_DIR ${CMAKE_INSTALL_LIBDIR} CACHE INTERNAL "Installation directory for libraries" FORCE)
+    set(INSTALL_INC_DIR ${CMAKE_INSTALL_INCLUDEDIR} CACHE INTERNAL "Installation directory for headers" FORCE)
+    set(INSTALL_SHARE_DIR ${CMAKE_INSTALL_DATADIR} CACHE INTERNAL "Shared files directory" FORCE)
+    set(INSTALL_DOC_DIR ${CMAKE_INSTALL_DOCDIR} CACHE INTERNAL "Doc files directory" FORCE)
+endif()
 
 if(CMAKE_GENERATOR_TOOLSET MATCHES "v([0-9]+)_xp")
     add_definitions(-D_WIN32_WINNT=0x0501)
@@ -42,7 +73,7 @@ set(GeoTIFF_VERSION ${VERSION})
 set(LINK_SOVERSION "2")
 set(LINK_VERSION "2.1.1")
 
-report_version(${PROJECT_NAME} "${VERSION} [${LINK_VERSION}]")  
+report_version(${PROJECT_NAME} "${VERSION} [${LINK_VERSION}]")
 
 ###############################################################################
 # General build settings
@@ -215,15 +246,20 @@ set(GEOTIFF_LIB_HEADERS
     libxtiff/xtiffio.h)
 
 # Install doc files
+if(NOT SKIP_INSTALL_DOCS AND NOT SKIP_INSTALL_ALL)
 install(FILES
     AUTHORS ChangeLog COPYING INSTALL LICENSE README README_BIN README.WIN
     DESTINATION "${INSTALL_DOC_DIR}")
+endif()
 
 # Install CSV data files
-install(FILES ${GEOTIFF_CSV_DATA} DESTINATION ${INSTALL_SHARE_DIR}/epsg_csv)
-
+if(NOT SKIP_INSTALL_FILES AND NOT SKIP_INSTALL_ALL)
+    install(FILES ${GEOTIFF_CSV_DATA} DESTINATION ${INSTALL_SHARE_DIR}/epsg_csv)
+endif()
 # Install header files for development distribution
-install(FILES ${GEOTIFF_LIB_HEADERS} DESTINATION ${INSTALL_INC_DIR})
+if(NOT SKIP_INSTALL_HEADERS AND NOT SKIP_INSTALL_ALL)
+    install(FILES ${GEOTIFF_LIB_HEADERS} DESTINATION ${INSTALL_INC_DIR})
+endif()
 
 set(EXPORT_TARGETS)
 
@@ -307,17 +343,29 @@ if(BUILD_SHARED_LIBS)
     if(WIN32 AND MSVC)
         set_target_properties(${LIB_NAME} PROPERTIES IMPORT_SUFFIX "_i.lib")
     endif(WIN32 AND MSVC)
-else()    
+elseif(OSX_FRAMEWORK)
+    add_library(${LIB_NAME} SHARED ${GEOTIFF_LIB_SOURCES} ${GEOTIFF_LIB_CSV_SOURCES} ${XTIFF_SOURCES} ${GEOTIFF_LIB_HEADERS} ${GEOTIFF_CSV_DATA})
+    set_property(SOURCE ${GEOTIFF_CSV_DATA} PROPERTY MACOSX_PACKAGE_LOCATION "Resources/epsg_csv")
+    set_target_properties(${LIB_NAME} PROPERTIES
+      FRAMEWORK TRUE
+      FRAMEWORK_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}"
+      MACOSX_FRAMEWORK_SHORT_VERSION_STRING ${VERSION}
+      MACOSX_FRAMEWORK_BUNDLE_VERSION ${VERSION}
+      MACOSX_FRAMEWORK_IDENTIFIER org.osgeo.libgeotiff
+      XCODE_ATTRIBUTE_INSTALL_PATH "@rpath"
+      PUBLIC_HEADER "${GEOTIFF_LIB_HEADERS}"
+    )
+else()
     add_library(${LIB_NAME} STATIC ${GEOTIFF_LIB_SOURCES} ${GEOTIFF_LIB_CSV_SOURCES})
-endif()  
+endif()
 
-set(EXPORT_TARGETS ${EXPORT_TARGETS} ${LIB_NAME}) 
+set(EXPORT_TARGETS ${EXPORT_TARGETS} ${LIB_NAME})
 
-target_link_extlibraries(${LIB_NAME}) 
+target_link_extlibraries(${LIB_NAME})
 
 export(TARGETS ${EXPORT_TARGETS} FILE ${LIB_NAME}-exports.cmake EXPORT_LINK_INTERFACE_LIBRARIES)
 
-add_custom_target(uninstall COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake) 
+add_custom_target(uninstall COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
 
 # Unix, linux:
 if(UNIX)
@@ -327,24 +375,16 @@ if(UNIX)
       VERSION ${LINK_VERSION}
       SOVERSION ${LINK_SOVERSION}
       CLEAN_DIRECT_OUTPUT 1 )
-   # TODO: test   
-   if (APPLE)
-      set_target_properties(
-        ${LIB_NAME}
-        PROPERTIES
-        INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib")
-   endif()
 endif()
 
 install( TARGETS ${LIB_NAME}
     EXPORT depends
     RUNTIME DESTINATION "${INSTALL_BIN_DIR}"
     ARCHIVE DESTINATION "${INSTALL_LIB_DIR}"
-    LIBRARY DESTINATION "${INSTALL_LIB_DIR}" )
+    LIBRARY DESTINATION "${INSTALL_LIB_DIR}"
+    FRAMEWORK DESTINATION "${INSTALL_LIB_DIR}")
 
 # Define grouping of source files in PROJECT file (e.g. Visual Studio)
 source_group("CMake Files" FILES CMakeLists.txt)
 source_group("Header Files" FILES ${GEOTIFF_LIB_HEADERS})
 source_group("Source Files" FILES ${GEOTIFF_LIB_SOURCES})
-
-
