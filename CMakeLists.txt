@@ -30,22 +30,7 @@ if(OSX_FRAMEWORK)
   set(SKIP_INSTALL_FILES ON)
   set(SKIP_INSTALL_DOCS ON)
   set(SKIP_INSTALL_EXPORT ON)
-
   set(CMAKE_MACOSX_RPATH ON)
-
-  # use, i.e. don't skip the full RPATH for the build tree
-  set(CMAKE_SKIP_BUILD_RPATH  TRUE)
-
-  # when building, don't use the install RPATH already
-  # (but later on when installing)
-  set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-
-  # the RPATH to be used when installing
-  set(CMAKE_INSTALL_RPATH "@executable_path/../../../../Library/Frameworks")
-
-  # don't add the automatically determined parts of the RPATH
-  # which point to directories outside the build tree to the install RPATH
-  set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 else()
     include(GNUInstallDirs)
 
@@ -76,6 +61,10 @@ set(LINK_SOVERSION "2")
 set(LINK_VERSION "2.1.1")
 
 report_version(${PROJECT_NAME} "${VERSION} [${LINK_VERSION}]")
+
+if(OSX_FRAMEWORK)
+    set(FRAMEWORK_VERSION "${PROJECT_VERSION_MAJOR}")
+endif()
 
 ###############################################################################
 # General build settings
@@ -350,7 +339,7 @@ elseif(OSX_FRAMEWORK)
     set_property(SOURCE ${GEOTIFF_CSV_DATA} PROPERTY MACOSX_PACKAGE_LOCATION "Resources/epsg_csv")
     set_target_properties(${LIB_NAME} PROPERTIES
       FRAMEWORK TRUE
-      FRAMEWORK_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}"
+      FRAMEWORK_VERSION "${FRAMEWORK_VERSION}"
       MACOSX_FRAMEWORK_SHORT_VERSION_STRING ${VERSION}
       MACOSX_FRAMEWORK_BUNDLE_VERSION ${VERSION}
       MACOSX_FRAMEWORK_IDENTIFIER org.osgeo.libgeotiff
