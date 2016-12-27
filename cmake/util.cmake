@@ -32,17 +32,21 @@ function(check_version major minor patch rev)
       LIBGEOTIFF_VERSION ${GEOTIFF_H_CONTENTS})
     string (REGEX MATCH "([0-9]+)"
       LIBGEOTIFF_VERSION ${LIBGEOTIFF_VERSION})
-    
+
     string(SUBSTRING ${LIBGEOTIFF_VERSION} 0 1 LIBGEOTIFF_MAJOR_VERSION)
     string(SUBSTRING ${LIBGEOTIFF_VERSION} 1 1 LIBGEOTIFF_MINOR_VERSION)
     string(SUBSTRING ${LIBGEOTIFF_VERSION} 2 1 LIBGEOTIFF_PATCH_VERSION)
     string(SUBSTRING ${LIBGEOTIFF_VERSION} 3 1 LIBGEOTIFF_REVISION_VERSION)
-    
-    
+
+
     set(${major} ${LIBGEOTIFF_MAJOR_VERSION} PARENT_SCOPE)
     set(${minor} ${LIBGEOTIFF_MINOR_VERSION} PARENT_SCOPE)
     set(${patch} ${LIBGEOTIFF_PATCH_VERSION} PARENT_SCOPE)
     set(${rev}   ${LIBGEOTIFF_REVISION_VERSION} PARENT_SCOPE)
+
+    # Store version string in file for installer needs
+    file(TIMESTAMP ${CMAKE_SOURCE_DIR}/geotiff.h VERSION_DATETIME "%Y-%m-%d %H:%M:%S" UTC)
+    file(WRITE ${CMAKE_BINARY_DIR}/version.str "${LIBGEOTIFF_MAJOR_VERSION}.${LIBGEOTIFF_MINOR_VERSION}.${LIBGEOTIFF_PATCH_VERSION}.${LIBGEOTIFF_REVISION_VERSION}\n${VERSION_DATETIME}")
 
 endfunction(check_version)
 
@@ -52,10 +56,10 @@ function(report_version name ver)
     string(ASCII 27 Esc)
     set(BoldYellow  "${Esc}[1;33m")
     set(ColourReset "${Esc}[m")
-        
+
     message(STATUS "${BoldYellow}${name} version ${ver}${ColourReset}")
-    
-endfunction()  
+
+endfunction()
 
 # macro to find packages on the host OS
 macro( find_exthost_package )
