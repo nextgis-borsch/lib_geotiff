@@ -350,6 +350,10 @@ else()
     add_library(${LIB_NAME} STATIC ${GEOTIFF_LIB_SOURCES} ${GEOTIFF_LIB_CSV_SOURCES})
 endif()
 
+if(IOS)
+    set_target_properties(${LIB_NAME} PROPERTIES COMPILE_FLAGS "-arch ${IOS_ARCH}" LINK_FLAGS "-arch ${IOS_ARCH}")
+endif()
+
 set(EXPORT_TARGETS ${EXPORT_TARGETS} ${LIB_NAME})
 
 target_link_extlibraries(${LIB_NAME})
