@@ -96,9 +96,9 @@ if(WIN32)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-    set(COMPILE_FLAGS "-fPIC -Wall -Wno-long-long -Wno-implicit-function-declaration -Wno-int-conversion")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMPILE_FLAGS} -std=c99")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMPILE_FLAGS} -std=c++98")
+    set(_COMPILE_FLAGS "-fPIC -Wall -Wno-long-long -Wno-implicit-function-declaration -Wno-int-conversion")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${_COMPILE_FLAGS} -std=c99")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${_COMPILE_FLAGS} -std=c++98")
     if(GEOTIFF_BUILD_PEDANTIC)
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic")
@@ -138,7 +138,9 @@ include_directories(${PROJECT_SOURCE_DIR})
 include_directories(${PROJECT_SOURCE_DIR}/libxtiff)
 
 # TIFF support - required, default=ON
-find_anyproject(TIFF REQUIRED)
+find_anyproject(TIFF REQUIRED CMAKE_ARGS
+    -DSKIP_BUILD_DOCS=ON
+)
 if(TIFF_FOUND)
     add_definitions(-DHAVE_TIFF=1)
 endif(TIFF_FOUND)
