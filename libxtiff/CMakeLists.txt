@@ -10,10 +10,6 @@ if(NOT BUILD_SHARED_LIBS)
     set(XLIB_NAME xtiff)
     add_library(${XLIB_NAME} STATIC xtiff.c)
 
-    if(IOS)
-        set_target_properties(${XLIB_NAME} PROPERTIES COMPILE_FLAGS "-arch ${IOS_ARCH}" LINK_FLAGS "-arch ${IOS_ARCH}")
-    endif()
-
     if(WITH_TIFF_EXTERNAL)
         add_dependencies(${XLIB_NAME} TIFF_EP)
     endif()

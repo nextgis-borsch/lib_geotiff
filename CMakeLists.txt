@@ -74,10 +74,10 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
     set(GEOTIFF_BUILD_PEDANTIC TRUE)
 endif()
 
-#if (CMAKE_MAJOR_VERSION GREATER 2)
-#    cmake_policy(SET CMP0022 OLD) # interface link libraries
-#    cmake_policy(SET CMP0042 OLD) # osx rpath
-#endif()
+if(CMAKE_MAJOR_VERSION GREATER 2)
+   cmake_policy(SET CMP0022 OLD) # interface link libraries
+   cmake_policy(SET CMP0042 OLD) # osx rpath
+endif()
 
 ###############################################################################
 # Platform and compiler specific settings
@@ -134,9 +134,6 @@ endif()
 ###############################################################################
 # Search for dependencies
 
-include_directories(${PROJECT_SOURCE_DIR})
-include_directories(${PROJECT_SOURCE_DIR}/libxtiff)
-
 # TIFF support - required, default=ON
 find_anyproject(TIFF REQUIRED CMAKE_ARGS
     -DSKIP_BUILD_DOCS=ON
@@ -173,7 +170,10 @@ endif()
 # Generate geo_config.h with compile-time configuration
 
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/cmake/geo_config.h.in geo_config.h)
-include_directories ( ${CMAKE_CURRENT_BINARY_DIR} )
+
+include_directories(${PROJECT_SOURCE_DIR})
+include_directories(${PROJECT_SOURCE_DIR}/libxtiff)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 
 ###############################################################################
@@ -291,7 +291,7 @@ foreach(epsg_csv_file ${GEOTIFF_CSV_DATA})
     # SET(INCODE_EPSG_FROM_CSV_${epsg_csv_basename} FALSE CACHE BOOL "Build ${epsg_csv_basename} file target")
 
     # IF(INCODE_EPSG_FROM_CSV_${epsg_csv_basename})
-    if( INCODE_EPSG_FROM_CSV)
+    if(INCODE_EPSG_FROM_CSV)
         set(epsg_source_name "${CMAKE_CURRENT_BINARY_DIR}/incode_epsg_${epsg_csv_basename}.c")
         list(APPEND GEOTIFF_LIB_CSV_SOURCES "${epsg_source_name}")
 
@@ -352,15 +352,15 @@ else()
     add_library(${LIB_NAME} STATIC ${GEOTIFF_LIB_SOURCES} ${GEOTIFF_LIB_CSV_SOURCES})
 endif()
 
-if(IOS)
-    set_target_properties(${LIB_NAME} PROPERTIES COMPILE_FLAGS "-arch ${IOS_ARCH}" LINK_FLAGS "-arch ${IOS_ARCH}")
-endif()
+# if(IOS)
+#     set_target_properties(${LIB_NAME} PROPERTIES COMPILE_FLAGS "-arch ${IOS_ARCH}" LINK_FLAGS "-arch ${IOS_ARCH}")
+# endif()
 
 set(EXPORT_TARGETS ${EXPORT_TARGETS} ${LIB_NAME})
 
 target_link_extlibraries(${LIB_NAME})
 
-if (REGISTER_PACKAGE)
+if(REGISTER_PACKAGE)
     export(TARGETS ${EXPORT_TARGETS} FILE ${LIB_NAME}-exports.cmake)
     set(EXPORT_PACKAGE_NAME GeoTIFF)
     string(TOUPPER ${EXPORT_PACKAGE_NAME} EXPORT_PACKAGE_NAME_UPPER)
