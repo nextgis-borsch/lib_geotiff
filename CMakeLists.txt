@@ -147,6 +147,7 @@ endif()
 # TIFF support - required, default=ON
 find_anyproject(TIFF REQUIRED CMAKE_ARGS
     -DSKIP_BUILD_DOCS=ON
+    -DSKIP_TOOLS=ON
 )
 if(TIFF_FOUND)
     add_definitions(-DHAVE_TIFF=1)
