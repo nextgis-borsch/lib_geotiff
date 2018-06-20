@@ -22,7 +22,7 @@ MESSAGE(STATUS "Adding GeoTIFF utilities to build")
 
 FOREACH(utility ${GEOTIFF_UTILITIES})
     ADD_EXECUTABLE(${utility} ${utility}.c ${GETOPT_SOURCE})
-    TARGET_LINK_LIBRARIES(${utility} xtiff ${GEOTIFF_LIBRARY_TARGET})
+    TARGET_LINK_LIBRARIES(${utility} ${GEOTIFF_LIBRARY_TARGET})
     if(OSX_FRAMEWORK)
         set_target_properties(${utility} PROPERTIES INSTALL_RPATH "@executable_path/../../Library/Frameworks")
     endif()
@@ -30,7 +30,6 @@ ENDFOREACH()
 
 ADD_EXECUTABLE(geotifcp geotifcp.c ${GETOPT_SOURCE})
 TARGET_LINK_LIBRARIES(geotifcp
-    xtiff
     ${GEOTIFF_LIBRARY_TARGET}
     ${JPEG_LIBRARIES}
     ${ZLIB_LIBRARIES})
