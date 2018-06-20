@@ -269,7 +269,7 @@ set(EXPORT_TARGETS)
 ###############################################################################
 # Build libxtiff library
 
-add_subdirectory(libxtiff)
+# add_subdirectory(libxtiff)
 
 ###############################################################################
 # Build libgeotiff library
@@ -328,11 +328,6 @@ file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/epsg_incode_header.h"
 
 set(XTIFF_SOURCES libxtiff/xtiff.c)
 
-#---
-# Static libgeotiff archive
-# NOTE: Did not put XTIFF_SOURCES in static lib because libxtiff.a is written out
-#       currently.
-#---
 if (MSVC OR CMAKE_CONFIGURATION_TYPES)
   # For multi-config systems and for Visual Studio, the debug versions
   # of the libraries have a _d suffix.
@@ -359,7 +354,7 @@ elseif(OSX_FRAMEWORK)
       PUBLIC_HEADER "${GEOTIFF_LIB_HEADERS}"
     )
 else()
-    add_library(${LIB_NAME} STATIC ${GEOTIFF_LIB_SOURCES} ${GEOTIFF_LIB_CSV_SOURCES})
+    add_library(${LIB_NAME} STATIC ${GEOTIFF_LIB_SOURCES} ${GEOTIFF_LIB_CSV_SOURCES} ${XTIFF_SOURCES})
 endif()
 
 target_link_extlibraries(${LIB_NAME})

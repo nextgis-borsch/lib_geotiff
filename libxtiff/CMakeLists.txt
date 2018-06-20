@@ -6,4 +6,4 @@
 #
 ###############################################################################
 
-ADD_LIBRARY(xtiff STATIC xtiff.c)
+add_library(xtiff STATIC xtiff.c)
