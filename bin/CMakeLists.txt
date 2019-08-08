@@ -53,7 +53,7 @@ INSTALL(TARGETS ${GEOTIFF_UTILITIES}
 if(WIN32)
     add_custom_command(TARGET geotifcp
         POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -DDST_PATH="$<TARGET_FILE_DIR:geotifcp>" -DSRC_PATH="${PROJECT_BINARY_DIR}" -P ${PROJECT_SOURCE_DIR}/cmake/test_dependency.cmake
+        COMMAND ${CMAKE_COMMAND} -DDST_PATH="$<TARGET_FILE_DIR:makegeo>" -DSRC_PATH="${PROJECT_BINARY_DIR}" -P ${PROJECT_SOURCE_DIR}/cmake/test_dependency.cmake
         COMMENT "Copy DLLs"
     )
 endif()

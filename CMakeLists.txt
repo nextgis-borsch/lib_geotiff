@@ -386,7 +386,6 @@ if(BUILD_TESTING)
     endif()
     find_anyproject(JBIG REQUIRED)
     find_anyproject(LibLZMA REQUIRED)
-    find_anyproject(JPEG REQUIRED)
     # Just test if applications are executing
     add_test(makegeo bin/makegeo)
     add_test(listgeo bin/listgeo newgeo.tif)
