@@ -375,8 +375,6 @@ source_group("Source Files" FILES ${GEOTIFF_LIB_SOURCES})
 
 
 if(WITH_UTILITIES)
-    find_anyproject(JBIG REQUIRED)
-    find_anyproject(LibLZMA REQUIRED)
     set(GEOTIFF_LIBRARY_TARGET ${LIB_NAME} ${TARGET_LINK_LIB})
     add_subdirectory(bin)
 endif()
@@ -386,6 +384,9 @@ if(BUILD_TESTING)
     if(NOT WITH_UTILITIES)
         message(FATAL_ERROR "Build utilities required. Set WITH_UTILITIES to TRUE.")
     endif()
+    find_anyproject(JBIG REQUIRED)
+    find_anyproject(LibLZMA REQUIRED)
+    find_anyproject(JPEG REQUIRED)
     # Just test if applications are executing
     add_test(makegeo bin/makegeo)
     add_test(listgeo bin/listgeo newgeo.tif)
