@@ -268,7 +268,7 @@ static void ApplyWorldFile(const char *worldfilename, TIFF *out)
 
 static void InstallGeoTIFF(TIFF *out)
 {
-    GTIF *gtif=(GTIF*)0; /* GeoKey-level descriptor */
+    GTIF *gtif; /* GeoKey-level descriptor */
     FILE *fd;
 
     gtif = GTIFNew(out);
@@ -309,7 +309,7 @@ static void InstallGeoTIFF(TIFF *out)
 
 static void CopyGeoTIFF(TIFF * in, TIFF *out)
 {
-    GTIF *gtif=(GTIF*)0; /* GeoKey-level descriptor */
+    GTIF *gtif; /* GeoKey-level descriptor */
     double *d_list = NULL;
     int16   d_list_count;
 
@@ -741,7 +741,7 @@ DECLAREcpFunc(cpContig2ContigByRow_8_to_4)
 
     printf( "Downsample\n" );
 
-    (void) imagewidth; (void) spp;
+    (void) spp;
     for (row = 0; row < imagelength; row++) {
         int i_in, i_out_byte;
             
@@ -749,7 +749,7 @@ DECLAREcpFunc(cpContig2ContigByRow_8_to_4)
             goto done;
 
         for( i_in = 0, i_out_byte = 0;
-             i_in < imagewidth;
+             (unsigned)i_in < imagewidth;
              i_in += 2, i_out_byte++ )
         {
             buf_out[i_out_byte] =

@@ -49,14 +49,11 @@ INSTALL(TARGETS ${GEOTIFF_UTILITIES}
     LIBRARY DESTINATION ${INSTALL_LIB_DIR}
     ARCHIVE DESTINATION ${INSTALL_LIB_DIR})
 
+# Copy dependencies to bin dir
 if(WIN32)
-    file(GLOB_RECURSE IMPORTED_WIN_DLLS ${CMAKE_BINARY_DIR}/third-party/*.dll)
-    set(IMPORTED_WIN_DLLS ${IMPORTED_WIN_DLLS} $<TARGET_FILE:geotiff>)
-    foreach(IMPORTED_WIN_DLL ${IMPORTED_WIN_DLLS})
-        add_custom_command(TARGET geotifcp
-                            POST_BUILD
-                            COMMAND ${CMAKE_COMMAND} -E copy ${IMPORTED_WIN_DLL} $<TARGET_FILE_DIR:geotifcp>
-                            COMMENT "Copy ${IMPORTED_WIN_DLL} to geotifcp target directory"
-                        )
-    endforeach()
+    add_custom_command(TARGET geotifcp
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -DDST_PATH="$<TARGET_FILE_DIR:geotifcp>" -DSRC_PATH="${PROJECT_BINARY_DIR}" -P ${PROJECT_SOURCE_DIR}/cmake/test_dependency.cmake
+        COMMENT "Copy DLLs"
+    )
 endif()

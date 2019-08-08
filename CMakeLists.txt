@@ -4,7 +4,7 @@
 #
 # Author: Mateusz Loskot <mateusz@loskot.net>
 # Author: Dmitry Baryshnikov <polimax@mail.ru>
-# Copyright (C), 2016 NextGIS <info@nextgis.com>
+# Copyright (C), 2016,2019 NextGIS <info@nextgis.com>
 #
 ###############################################################################
 cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
@@ -48,6 +48,7 @@ else()
     set(INSTALL_INC_DIR ${CMAKE_INSTALL_INCLUDEDIR} CACHE INTERNAL "Installation directory for headers" FORCE)
     set(INSTALL_SHARE_DIR ${CMAKE_INSTALL_DATADIR} CACHE INTERNAL "Shared files directory" FORCE)
     set(INSTALL_DOC_DIR ${CMAKE_INSTALL_DOCDIR} CACHE INTERNAL "Doc files directory" FORCE)
+    set(INSTALL_MAN_DIR ${CMAKE_INSTALL_MANDIR} CACHE INTERNAL "Man files directory" FORCE)
     set(INSTALL_CMAKECONF_DIR ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}/CMake CACHE INTERNAL "Installation directory for cmake config files" FORCE)
 endif()
 
@@ -64,11 +65,11 @@ set(VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION
 set(GeoTIFF_VERSION ${VERSION})
 
 # Set library version to match that of autoconf:
-# libgeotiff.so -> libgeotiff.so.2.1.1
-# libgeotiff.so.2 -> libgeotiff.so.2.1.1
-# libgeotiff.so.2.1.1
-set(LINK_SOVERSION "2")
-set(LINK_VERSION "2.1.1")
+# libgeotiff.so -> libgeotiff.so.2.2.0
+# libgeotiff.so.2 -> libgeotiff.so.2.2.0
+# libgeotiff.so.2.2.0
+set(LINK_SOVERSION "5")
+set(LINK_VERSION "5.0.0")
 
 report_version(${PROJECT_NAME} "${VERSION} (${LINK_VERSION})")
 
@@ -89,6 +90,21 @@ if(CMAKE_MAJOR_VERSION GREATER 2)
    cmake_policy(SET CMP0042 OLD) # osx rpath
 endif()
 
+# TODO: Still testing the output paths --mloskot
+SET(GEOTIFF_BUILD_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
+
+# Output directory in which to build RUNTIME target files.
+# SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${GEOTIFF_BUILD_OUTPUT_DIRECTORY})
+SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
+
+# Output directory in which to build LIBRARY target files
+# SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${GEOTIFF_BUILD_OUTPUT_DIRECTORY})
+SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+
+# Output directory in which to build ARCHIVE target files.
+# SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${GEOTIFF_BUILD_OUTPUT_DIRECTORY})
+SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+
 ###############################################################################
 # Platform and compiler specific settings
 
@@ -106,9 +122,9 @@ if(WIN32)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-    set(_COMPILE_FLAGS "-fPIC -Wall -Wno-long-long -Wno-implicit-function-declaration -Wno-int-conversion")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${_COMPILE_FLAGS} -std=c99")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${_COMPILE_FLAGS} -std=c++98")
+    set(COMPILE_FLAGS "-fPIC -Wall -Wno-long-long")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMPILE_FLAGS} -std=c99")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMPILE_FLAGS} -std=c++98")
     if(GEOTIFF_BUILD_PEDANTIC)
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic")
@@ -120,44 +136,32 @@ include(CheckIncludeFiles)
 check_include_files(stdio.h HAVE_STDIO_H)
 check_include_files(stdlib.h HAVE_STDLIB_H)
 check_include_files(string.h HAVE_STRING_H)
+check_include_files(strings.h HAVE_STRINGS_H)
 
 configure_file(${CMAKE_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake IMMEDIATE @ONLY)
-
-include(FindAnyProject)
 
 ###############################################################################
 # User-defined build settings
 
-set(GEOTIFF_CSV_NAMES area.csv codes.csv datum.csv gcs.csv pcs.csv)
-find_exthost_path(GEOTIFF_CSV_DATA_DIR NAMES ${GEOTIFF_CSV_NAMES}
-    PATHS "${CMAKE_SOURCE_DIR}/csv"
-    DOC "Default location of GeoTIFF CSV files"
-    NO_DEFAULT_PATH)
-
-if(IS_DIRECTORY ${GEOTIFF_CSV_DATA_DIR} AND EXISTS "${GEOTIFF_CSV_DATA_DIR}/gcs.csv")
-    message(STATUS "Found GeoTIFF CSV files in: ${GEOTIFF_CSV_DATA_DIR}")
-    add_definitions(-DCSV_DATA_DIR="${GEOTIFF_CSV_DATA_DIR}")
-else()
-    message(FATAL_ERROR "Failed to find GeoTIFF CSV files in: ${GEOTIFF_CSV_DATA_DIR}")
-endif()
+SET(WITH_UTILITIES TRUE CACHE BOOL "Choose if GeoTIFF utilities should be built")
 
 ###############################################################################
 # Search for dependencies
 
-# TIFF support - required, default=ON
-find_anyproject(TIFF REQUIRED CMAKE_ARGS
-    -DSKIP_BUILD_DOCS=ON
-    -DSKIP_TOOLS=ON
-)
-if(TIFF_FOUND)
-    add_definitions(-DHAVE_TIFF=1)
-endif(TIFF_FOUND)
+include_directories(${PROJECT_SOURCE_DIR})
+include_directories(${PROJECT_SOURCE_DIR}/libxtiff)
 
-# PROJ.4 support - optional, default=ON
-find_anyproject(PROJ4 DEFAULT ON)
-if(PROJ4_FOUND)
-    add_definitions(-DHAVE_LIBPROJ=1)
-endif()
+# TIFF support - required, default=ON
+set(WITH_TIFF TRUE CACHE BOOL "Choose if TIFF support should be built")
+
+
+###############################################################################
+# Search for dependencies
+
+include(FindAnyProject)
+
+# PROJ.4 support - required
+find_anyproject(PROJ REQUIRED)
 
 # Zlib support - optional, default=OFF
 find_anyproject(ZLIB DEFAULT OFF)
@@ -171,6 +175,15 @@ if(JPEG_FOUND)
     add_definitions(-DHAVE_JPEG=1)
 endif()
 
+# TIFF support - required, default=ON
+find_anyproject(TIFF REQUIRED CMAKE_ARGS
+    -DSKIP_BUILD_DOCS=ON
+    -DSKIP_TOOLS=ON
+)
+if(TIFF_FOUND)
+    add_definitions(-DHAVE_TIFF=1)
+endif(TIFF_FOUND)
+
 # Turn off TOWGS84 support
 set(WITH_TOWGS84 TRUE CACHE BOOL "Build with TOWGS84 support")
 if (NOT WITH_TOWGS84)
@@ -182,48 +195,13 @@ endif()
 
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/cmake/geo_config.h.in geo_config.h)
 
+include_directories(BEFORE ${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${PROJECT_SOURCE_DIR})
 include_directories(${PROJECT_SOURCE_DIR}/libxtiff)
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 
 ###############################################################################
 # Installation settings
-
-set(GEOTIFF_CSV_DATA
-    csv/alias.csv
-    csv/area.csv
-    csv/change.csv
-    csv/compdcs.csv
-    csv/coordinate_axis.csv
-    csv/coordinate_axis_name.csv
-    csv/coordinate_operation.csv
-    csv/coordinate_operation_method.csv
-    csv/coordinate_operation_parameter.csv
-    csv/coordinate_operation_parameter_value.csv
-    csv/coordinate_operation_path.csv
-    csv/coordinate_reference_system.csv
-    csv/coordinate_system.csv
-    csv/datum.csv
-    csv/datum_shift.csv
-    csv/datum_shift_pref.csv
-    csv/deprecation.csv
-    csv/ellipsoid.csv
-    csv/esri_datum_override.csv
-    csv/gcs.csv
-    csv/gcs.override.csv
-    csv/geoccs.csv
-    csv/naming_system.csv
-    csv/pcs.csv
-    csv/pcs.override.csv
-    csv/prime_meridian.csv
-    csv/projop_wparm.csv
-    csv/stateplane.csv
-    csv/supersession.csv
-    csv/unit_of_measure.csv
-    csv/version_history.csv
-    csv/vertcs.csv
-    csv/vertcs.override.csv )
 
 set(GEOTIFF_LIB_HEADERS
     geotiff.h
@@ -249,17 +227,63 @@ set(GEOTIFF_LIB_HEADERS
     geokeys.inc
     libxtiff/xtiffio.h)
 
+set(GEOTIFF_MAN_PAGES
+    man/man1/applygeo.1
+    man/man1/geotifcp.1
+    man/man1/listgeo.1)
+
+
+# #    ${PROJECT_BINARY_DIR}/geotiff_version.h
+
+# IF(WIN32)
+#     SET(DEFAULT_LIB_SUBDIR lib)
+#     SET(DEFAULT_DATA_SUBDIR .)
+#     SET(DEFAULT_INCLUDE_SUBDIR include)
+
+#     IF(MSVC)
+#         SET(DEFAULT_BIN_SUBDIR bin)
+#     ELSE()
+#         SET(DEFAULT_BIN_SUBDIR .)
+#     ENDIF()
+# ELSE()
+#     # Common locatoins for Unix and Mac OS X
+#     SET(DEFAULT_BIN_SUBDIR bin)
+#     SET(DEFAULT_LIB_SUBDIR lib)
+#     SET(DEFAULT_DATA_SUBDIR share)
+#     SET(DEFAULT_INCLUDE_SUBDIR include)
+# ENDIF()
+
+# # Locations are changeable by user to customize layout of GeoTIFF installation
+# # (default values are platform-specIFic)
+# SET(GEOTIFF_BIN_SUBDIR ${DEFAULT_BIN_SUBDIR} CACHE STRING
+#     "Subdirectory where executables will be installed")
+# SET(GEOTIFF_LIB_SUBDIR ${DEFAULT_LIB_SUBDIR} CACHE STRING
+#     "Subdirectory where libraries will be installed")
+# SET(GEOTIFF_INCLUDE_SUBDIR ${DEFAULT_INCLUDE_SUBDIR} CACHE STRING
+#     "Subdirectory where header files will be installed")
+# SET(GEOTIFF_DATA_SUBDIR ${DEFAULT_DATA_SUBDIR} CACHE STRING
+#     "Subdirectory where data will be installed")
+
+# # Mark *_SUBDIR variables as advanced and dedicated to use by power-users only.
+# MARK_AS_ADVANCED(GEOTIFF_BIN_SUBDIR GEOTIFF_LIB_SUBDIR GEOTIFF_INCLUDE_SUBDIR GEOTIFF_DATA_SUBDIR)
+
+# # Full paths for the installation
+# SET(GEOTIFF_BIN_DIR ${GEOTIFF_BIN_SUBDIR})
+# SET(GEOTIFF_LIB_DIR ${GEOTIFF_LIB_SUBDIR})
+# SET(GEOTIFF_INCLUDE_DIR ${GEOTIFF_INCLUDE_SUBDIR})
+# SET(GEOTIFF_DATA_DIR ${GEOTIFF_DATA_SUBDIR})
+
 # Install doc files
 if(NOT SKIP_INSTALL_DOCS AND NOT SKIP_INSTALL_ALL)
-install(FILES
-    AUTHORS ChangeLog COPYING INSTALL LICENSE README README_BIN README.WIN
-    DESTINATION "${INSTALL_DOC_DIR}")
+    install(FILES
+        AUTHORS ChangeLog COPYING INSTALL LICENSE README README_BIN README.WIN
+        DESTINATION "${INSTALL_DOC_DIR}")
+    install(FILES 
+        ${GEOTIFF_MAN_PAGES} 
+        DESTINATION "${INSTALL_MAN_DIR}")
 endif()
 
-# Install CSV data files
-if(NOT SKIP_INSTALL_FILES AND NOT SKIP_INSTALL_ALL)
-    install(FILES ${GEOTIFF_CSV_DATA} DESTINATION ${INSTALL_SHARE_DIR}/epsg_csv)
-endif()
+
 # Install header files for development distribution
 if(NOT SKIP_INSTALL_HEADERS AND NOT SKIP_INSTALL_ALL)
     install(FILES ${GEOTIFF_LIB_HEADERS} DESTINATION ${INSTALL_INC_DIR})
@@ -275,9 +299,8 @@ set(EXPORT_TARGETS)
 ###############################################################################
 # Build libgeotiff library
 
-set(GEOTIFF_LIB_SOURCES
+SET(GEOTIFF_LIB_SOURCES
     cpl_serv.c
-    cpl_csv.c
     geo_extra.c
     geo_free.c
     geo_get.c
@@ -291,41 +314,6 @@ set(GEOTIFF_LIB_SOURCES
     geo_trans.c
     geo_write.c
     geotiff_proj4.c)
-
-set(INCODE_EPSG_FROM_CSV FALSE CACHE BOOL "Build source-encoded EPSG data files")
-
-foreach(epsg_csv_file ${GEOTIFF_CSV_DATA})
-    # We cannot use NAME_WE without string-replace, because that would
-    # give "gcs.csv" and "gcs.override.csv" the same epsg_csv_name
-    get_filename_component(epsg_csv_name "${epsg_csv_file}" NAME)
-    string(REPLACE ".csv" "" epsg_csv_basename "${epsg_csv_name}")
-    # SET(INCODE_EPSG_FROM_CSV_${epsg_csv_basename} FALSE CACHE BOOL "Build ${epsg_csv_basename} file target")
-
-    # IF(INCODE_EPSG_FROM_CSV_${epsg_csv_basename})
-    if(INCODE_EPSG_FROM_CSV)
-        set(epsg_source_name "${CMAKE_CURRENT_BINARY_DIR}/incode_epsg_${epsg_csv_basename}.c")
-        list(APPEND GEOTIFF_LIB_CSV_SOURCES "${epsg_source_name}")
-
-        # sanitize .'s out of struct names
-        string(REGEX REPLACE "\\." "_" STRUCT_NAME ${epsg_csv_basename})
-        list(APPEND epsg_includefile_externconst "\nextern const datafile_rows_t *${STRUCT_NAME}_rows[]")
-        list(APPEND epsg_includefile_pointer_list "  { \"${STRUCT_NAME}\", ${STRUCT_NAME}_rows },")
-        message(STATUS "Creating buildrule to convert ${epsg_csv_basename}.csv to ${epsg_csv_basename}.c and include it in code.")
-        add_custom_command(OUTPUT "${epsg_source_name}"
-            COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/csv/csv2c.py" "${CMAKE_CURRENT_SOURCE_DIR}/${epsg_csv_file}" "${epsg_source_name}"
-            DEPENDS "${epsg_csv_file}"
-            WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-            VERBATIM)
-    endif()
-endforeach()
-
-set(EPSG_INCODE_EXPLANATION
-    "This file is autogenerated by CMake, based on the INCODE_EPSG_* options specified during configure.\n
-    Choosing an EPSG CSV file for inclusion into code will run csv/csv2c.py on the file and include the\n
-    resulting c-source as a build target, as opposed to using GDAL_DATA-dir to find the EPSG codes at runtime.")
-string(REPLACE ";" "\n" EPSG_INCLUDEFILE_POINTER_STRING "${epsg_includefile_pointer_list}")
-file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/epsg_incode_header.h"
-    "/* ${EPSG_INCODE_EXPLANATION} */\n${epsg_includefile_externconst}; \n\n/* Pointers to csv data included in code */\nstatic const datafile_t files[] = {\n${EPSG_INCLUDEFILE_POINTER_STRING}\n  { NULL, NULL }};")
 
 set(XTIFF_SOURCES libxtiff/xtiff.c)
 
@@ -341,7 +329,7 @@ if(BUILD_SHARED_LIBS)
     # Windows:
     if(WIN32 AND MSVC)
         set_target_properties(${LIB_NAME} PROPERTIES IMPORT_SUFFIX "_i.lib")
-    endif(WIN32 AND MSVC)
+    endif()
 elseif(OSX_FRAMEWORK)
     add_library(${LIB_NAME} SHARED ${GEOTIFF_LIB_SOURCES} ${GEOTIFF_LIB_CSV_SOURCES} ${XTIFF_SOURCES} ${GEOTIFF_LIB_HEADERS} ${GEOTIFF_CSV_DATA})
     set_property(SOURCE ${GEOTIFF_CSV_DATA} PROPERTY MACOSX_PACKAGE_LOCATION "Resources/epsg_csv")

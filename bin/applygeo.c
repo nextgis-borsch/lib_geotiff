@@ -6,8 +6,8 @@
 static int
 InstallGeoTIFF(const char *geofile, const char *tiffile)
 {
-    TIFF *tif = (TIFF*)0; /* TIFF-level descriptor */
-    GTIF *gtif=(GTIF*)0; /* GeoKey-level descriptor */
+    TIFF *tif; /* TIFF-level descriptor */
+    GTIF *gtif; /* GeoKey-level descriptor */
     FILE *fp;
 
     uint16 *panVI = NULL;
@@ -80,6 +80,12 @@ main(int argc, char *argv[])
     char *geofile;
     char *tiffile;
     int rc;
+
+    if( argc != 3 )
+    {
+        fprintf(stderr, usage, "applygeo");
+        exit(1);
+    }
  
     prog = argv[0];
     geofile = argv[1];

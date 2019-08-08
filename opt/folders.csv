@@ -1,1 +1,8 @@
-.,.,,"README,h,c,log,1,asm,map,bmp,jpg,ppm"
+,,,"AUTHORS,ChangeLog,COPYING,INSTALL,LICENSE,README,README_BIN,README.WIN,h,c,inc,"
+bin,bin,,c
+cmake,cmake,,"in"
+docs,docs,skip,
+libxtiff,libxtiff,,"c,h"
+m4,m4,skip,
+man/man1,man/man1,,1
+test,test,skip,
