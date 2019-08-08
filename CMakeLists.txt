@@ -384,6 +384,7 @@ if(BUILD_TESTING)
     if(NOT WITH_UTILITIES)
         message(FATAL_ERROR "Build utilities required. Set WITH_UTILITIES to TRUE.")
     endif()
+    find_anyproject(SQLite3 REQUIRED)
     find_anyproject(JBIG REQUIRED)
     find_anyproject(LibLZMA REQUIRED)
     # Just test if applications are executing
