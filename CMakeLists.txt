@@ -69,7 +69,7 @@ set(GeoTIFF_VERSION ${VERSION})
 # libgeotiff.so.2 -> libgeotiff.so.2.2.0
 # libgeotiff.so.2.2.0
 set(LINK_SOVERSION "5")
-set(LINK_VERSION "5.0.0")
+set(LINK_VERSION "5.2.0")
 
 report_version(${PROJECT_NAME} "${VERSION} (${LINK_VERSION})")
 
@@ -166,13 +166,15 @@ find_anyproject(PROJ REQUIRED)
 # Zlib support - optional, default=OFF
 find_anyproject(ZLIB DEFAULT OFF)
 if(ZLIB_FOUND)
-    add_definitions(-DHAVE_ZIP=1)
+    set(HAVE_ZIP 1)
+    add_definitions(-DHAVE_ZIP=${HAVE_ZIP})
 endif()
 
 # JPEG support - optional, default=OFF
 find_anyproject(JPEG DEFAULT OFF)
 if(JPEG_FOUND)
-    add_definitions(-DHAVE_JPEG=1)
+    set(HAVE_JPEG 1)
+    add_definitions(-DHAVE_JPEG=${HAVE_JPEG})
 endif()
 
 # TIFF support - required, default=ON
@@ -225,6 +227,7 @@ set(GEOTIFF_LIB_HEADERS
     epsg_proj.inc
     epsg_vertcs.inc
     geokeys.inc
+    geokeys_v1_1.inc
     libxtiff/xtiffio.h)
 
 set(GEOTIFF_MAN_PAGES
