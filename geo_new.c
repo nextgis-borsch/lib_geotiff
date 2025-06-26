@@ -267,19 +267,25 @@ static int ReadKey(GTIF* gt, TempKeyData* tempData,
     {
         case GTIFF_LOCAL:
             /* store value into data value */
-            if (count != 1 )
+            
+            if (count != 1)
             {
-                if( gt->gt_error_callback )
+                const char* env = getenv("LIBGEOTIFF_SKIP_LOCAL_COUNT_CHECK");
+                if (!env || *env == '\0' || strcmp(env, "0") == 0)
                 {
-                    gt->gt_error_callback(
-                        gt,
-                        LIBGEOTIFF_ERROR,
-                        "Key %s of TIFFTagLocation=0 has count=%d, "
-                        "whereas only 1 is legal.",
-                        GTIFKeyName(keyptr->gk_key), count);
+                    if (gt->gt_error_callback)
+                    {
+                        gt->gt_error_callback(
+                            gt,
+                            LIBGEOTIFF_ERROR,
+                            "Key %s of TIFFTagLocation=0 has count=%d, "
+                            "whereas only 1 is legal.",
+                            GTIFKeyName(keyptr->gk_key), count);
+                    }
+                    return 0;
                 }
-                return 0;
             }
+            
             memcpy(&keyptr->gk_data, &(entptr->ent_val_offset), sizeof(pinfo_t));
             break;
         case GTIFF_GEOKEYDIRECTORY:
